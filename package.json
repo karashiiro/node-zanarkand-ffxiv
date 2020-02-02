@@ -1,6 +1,6 @@
 {
   "name": "node-zanarkand-ffxiv",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A wrapper for acchan's Zanarkand network capture library.",
   "main": "node-zanarkand-ffxiv.js",
   "scripts": {
@@ -11,6 +11,7 @@
   },
   "author": "karashiiro",
   "license": "MIT",
+  "homepage": "https://github.com/karashiiro/node-zanarkand-ffxiv#readme",
   "dependencies": {
     "jsbi": "^3.1.1",
     "request": "^2.88.0",
