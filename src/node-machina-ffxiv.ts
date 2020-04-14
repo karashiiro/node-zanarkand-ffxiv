@@ -93,39 +93,50 @@ export class ZanarkandFFXIV extends EventEmitter {
 	}
 
 	reset(callback?: (error: Error | null | undefined) => void) {
-		if (this.options.exePath == null || this.args == null)
-			throw new Error("No instance to reset.");
-		this.kill();
-		this.childProcess = spawn(this.options.exePath!, this.args);
-		this.start(callback);
-		this.log("ZanarkandWrapper reset!");
+		return new Promise((resolve, reject) => {
+			if (this.options.exePath == null || this.args == null)
+				reject(new Error("No instance to reset."));
+			this.kill();
+			this.childProcess = spawn(this.options.exePath!, this.args);
+			this.start(callback);
+			this.log("ZanarkandWrapper reset!");
+			resolve();
+		});
 	}
 
 	start(callback?: (error: Error | null | undefined) => void) {
-		if (this.childProcess == null)
-			throw new Error("ZanarkandWrapper is uninitialized.");
-		this.server.listen(this.options.port, () => {
-			this.log(`Server started on port ${this.options.port}.`);
+		return new Promise((resolve, reject) => {
+			if (this.childProcess == null)
+				reject(new Error("ZanarkandWrapper is uninitialized."));
+			this.server.listen(this.options.port, () => {
+				this.log(`Server started on port ${this.options.port}.`);
+			});
+			this.childProcess.stdin.write("start\n", callback);
+			this.log(`ZanarkandWrapper started!`);
+			resolve();
 		});
-		this.childProcess.stdin.write("start\n", callback);
-		this.log(`ZanarkandWrapper started!`);
 	}
 
 	stop(callback?: (error: Error | null | undefined) => void) {
-		if (this.childProcess == null)
-			throw new Error("ZanarkandWrapper is uninitialized.");
-		this.childProcess.stdin.write("stop\n", callback);
-		this.server.close(() => {
-			this.log(`Server on port ${this.options.port} closed.`);
+		return new Promise((resolve, reject) => {
+			if (this.childProcess == null)
+				reject(new Error("ZanarkandWrapper is uninitialized."));
+			this.childProcess.stdin.write("stop\n", callback);
+			this.server.close(() => {
+				this.log(`Server on port ${this.options.port} closed.`);
+			});
+			this.log(`ZanarkandWrapper stopped!`);
+			resolve();
 		});
-		this.log(`ZanarkandWrapper stopped!`);
 	}
 
 	kill(callback?: () => {}) {
-		if (this.childProcess == null)
-			throw new Error("ZanarkandWrapper is uninitialized.");
-		this.childProcess.stdin.end("kill\n", callback);
-		delete this.childProcess;
-		this.log(`ZanarkandWrapper killed!`);
+		return new Promise((resolve, reject) => {
+			if (this.childProcess == null)
+				reject(new Error("ZanarkandWrapper is uninitialized."));
+			this.childProcess.stdin.end("kill\n", callback);
+			delete this.childProcess;
+			this.log(`ZanarkandWrapper killed!`);
+		});
 	}
 }

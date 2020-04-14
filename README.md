@@ -1,11 +1,9 @@
 # node-zanarkand-ffxiv
 A WIP Node.js wrapper for acchan's [Zanarkand](https://github.com/ayyaruq/zanarkand) network capture library.
 
-If you so choose, you can use it exclusively as a wrapper for Zanarkand with minimal data processing by assigning the `raw` data event as shown below.
-
 Event type names and all packet structures are taken from the [Sapphire](https://github.com/SapphireServer/Sapphire) project.
 
-NOTE: Most features besides the `raw` data event will break after every patch release until the [IPC opcodes](https://github.com/SapphireServer/Sapphire/blob/develop/src/common/Network/PacketDef/Ipcs.h) are updated in the Sapphire repo.
+NOTE: Most features besides the `any` data event will break after every patch release until the [IPC opcodes](https://github.com/SapphireServer/Sapphire/blob/develop/src/common/Network/PacketDef/Ipcs.h) are updated in the Sapphire repo.
 
 ## Installation
 ```
@@ -15,38 +13,16 @@ npm install node-zanarkand-ffxiv
 Be sure to also install [Go](https://golang.org/) to build [ZanarkandWrapperJSON](https://github.com/karashiiro/ZanarkandWrapperJSON) and place the output in the ZanarkandWrapper folder.
 
 ## Example
-```
-const ZanarkandFFXIV = require('node-zanarkand-ffxiv');
+```ts
+import { ZanarkandFFXIV } from "node-zanarkand-ffxiv"
 const Zanarkand = new ZanarkandFFXIV();
-Zanarkand.start(() => {
+
+Zanarkand.start(async () => {
     console.log("Zanarkand started!");
+    await Zanarkand.reset(); // Also promisified!
 });
 
 // Assign event handlers
-Zanarkand.on('cFCommence', (content) => {
-    console.log(`[${getTime()}]Duty commenced!`);
-});
-
-Zanarkand.on('cFRegistered', (content) => {
-    console.log(`[${getTime()}]Duty registration complete.`);
-});
-
-Zanarkand.on('examineSearchInfo', (content) => {
-    console.log(`Viewing search info.
-        FC: ${content.fc}
-        Search Comment: ${content.searchComment}
-        World: ${content.world}
-    `);
-});
-
-Zanarkand.on('freeCompanyMemberLogin', (content) => {
-    console.log(`[${getTime()}][FC]${content.character} has logged in.`);
-});
-
-Zanarkand.on('freeCompanyMemberLogout', (content) => {
-    console.log(`[${getTime()}][FC]${content.character} has logged out.`);
-});
-
 Zanarkand.on('initZone', (content) => {
     console.log(`[${getTime()}]Zone loaded.`);
 });
@@ -59,9 +35,5 @@ Zanarkand.on('marketBoardItemListing', (content) => {
         if (content.materia[i].length > 0) output += `Materia: ${content.materia[i].toString()}\n`;
     }
     console.log(output);
-});
-
-Zanarkand.on('message', (content) => { // Using a supertype event to streamline code
-    console.log(`[${getTime()}][${content.type.slice(7)}]<${content.character}> ${content.message}`);
 });
 ```
