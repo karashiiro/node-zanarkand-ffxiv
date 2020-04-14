@@ -1,23 +1,24 @@
 {
   "name": "node-zanarkand-ffxiv",
-  "version": "1.0.1",
-  "description": "A wrapper for acchan's Zanarkand network capture library.",
-  "main": "node-zanarkand-ffxiv.js",
+  "version": "1.0.0",
+  "description": "An event-based Node.js wrapper for Zanarkand.",
+  "main": "lib/node-zanarkand-ffxiv.js",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
   "scripts": {
-    "postinstall": "",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "unfirewall7": "netsh advfirewall firewall add rule name=\"ZanarkandWrapperJSON\" dir=in action=allow program=./ZanarkandWrapper/ZanarkandWrapper.exe enable=yes",
-    "unfirewallXP": "netsh firewall set allowedprogram ./ZanarkandWrapper/ZanarkandWrapper.exe ZanarkandWrapperJSON ENABLE"
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karashiiro/node-zanarkand-ffxiv.git"
   },
   "author": "karashiiro",
-  "license": "MIT",
-  "homepage": "https://github.com/karashiiro/node-zanarkand-ffxiv#readme",
-  "dependencies": {
-    "jsbi": "^3.1.1",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/karashiiro/node-zanarkand-ffxiv/issues"
   },
-  "devDependencies": {
-    "csv-parse": "^4.4.6"
-  }
+  "homepage": "https://github.com/karashiiro/node-zanarkand-ffxiv#readme"
 }
