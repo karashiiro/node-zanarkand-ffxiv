@@ -81,3 +81,6 @@ remote-data/
 
 # IDE configs
 .idea
+
+# Build directory
+lib/
