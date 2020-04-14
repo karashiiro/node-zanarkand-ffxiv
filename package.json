@@ -3,12 +3,20 @@
   "version": "1.0.0",
   "description": "An event-based Node.js wrapper for Zanarkand.",
   "main": "lib/node-zanarkand-ffxiv.js",
+  "files": ["lib/**/*"],
   "dependencies": {},
   "devDependencies": {
+    "prettier": "^2.0.4",
+    "tslint": "^6.1.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.8.3"
   },
   "scripts": {
     "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare" : "npm run build",
+    "prepublishOnly" : "npm run format && npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
