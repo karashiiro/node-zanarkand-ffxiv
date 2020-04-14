@@ -76,8 +76,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 				) {
 					this.emit("any", content);
 					this.emit(content.packetName, content);
-					this.emit(content.superType, content);
-					this.emit(content.subType, content);
+					if (content.superType) this.emit(content.superType, content);
+					if (content.subType) this.emit(content.subType, content);
 					this.emit("raw", content); // deprecated
 				}
 			});
