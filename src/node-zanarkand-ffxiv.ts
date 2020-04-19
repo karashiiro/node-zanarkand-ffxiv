@@ -33,7 +33,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.log = this.options.logger!;
 
 		if (!existsSync(this.options.exePath!)) {
-			throw new Error(`MachinaWrapper not found in ${this.options.exePath}`);
+			throw new Error(`ZanarkandWrapper not found in ${this.options.exePath}`);
 		}
 
 		this.args = [
