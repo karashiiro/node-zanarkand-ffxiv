@@ -14,8 +14,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 	private args: string[];
 	private server: Server;
 
-	constructor(options: ZanarkandFFXIVOptions) {
+	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
+
+		if (!options) options = {};
 
 		this.options = {
 			isDev: options.isDev || false,
