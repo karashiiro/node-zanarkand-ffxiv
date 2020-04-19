@@ -1,4 +1,4 @@
-import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
+import { ZanarkandFFXIVOptions } from "node-zanarkand-ffxiv/src/models/ZanarkandFFXIVOptions";
 import { join } from "path";
 import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
