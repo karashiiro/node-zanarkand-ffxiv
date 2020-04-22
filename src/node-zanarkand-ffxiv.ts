@@ -1,4 +1,4 @@
-import { ZanarkandFFXIVOptions } from "node-zanarkand-ffxiv/src/models/ZanarkandFFXIVOptions";
+import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 import { join } from "path";
 import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
@@ -50,12 +50,17 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		this.filter = [];
 
+		this.childProcess.stdout.on("data", (chunk) => {
+			this.log(chunk);
+		});
+
 		this.childProcess.on("error", (err) => {
 			this.log(err.message);
 		});
 
 		this.server = createServer((req) => {
 			const data: Array<Buffer | string> = [];
+			this.log("New request!");
 			req.on("data", (chunk: Buffer | string) => {
 				data.push(chunk);
 			});
@@ -100,6 +105,15 @@ export class ZanarkandFFXIV extends EventEmitter {
 				reject(new Error("No instance to reset."));
 			this.kill();
 			this.childProcess = spawn(this.options.exePath!, this.args);
+
+			this.childProcess.stdout.on("data", (chunk) => {
+				this.log(chunk);
+			});
+
+			this.childProcess.on("error", (err) => {
+				this.log(err.message);
+			});
+
 			this.start(callback);
 			this.log("ZanarkandWrapper reset!");
 			resolve();
