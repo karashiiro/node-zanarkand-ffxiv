@@ -89,6 +89,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 				}
 			});
 		});
+
+		this.server.listen(this.options.port);
 	}
 
 	async parse(_struct: any) {
