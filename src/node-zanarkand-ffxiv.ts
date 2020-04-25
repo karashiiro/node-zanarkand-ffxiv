@@ -2,8 +2,9 @@ import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 import { join } from "path";
 import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
-import { createServer, Server } from "http";
 import { EventEmitter } from "events";
+
+import WebSocket from "ws";
 
 export class ZanarkandFFXIV extends EventEmitter {
 	public filter: string[];
@@ -12,7 +13,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 	private options: ZanarkandFFXIVOptions;
 	private childProcess: ChildProcess;
 	private args: string[];
-	private server: Server;
+	private ws: WebSocket;
 
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
@@ -21,7 +22,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		this.options = {
 			isDev: options.isDev || false,
-			networkDevice: options.networkDevice || "",
+			networkDevice: options.networkDevice || "127.0.0.1",
 			port: options.port || 13346,
 			region: options.region || "Global",
 			// tslint:disable-next-line:no-empty
@@ -50,7 +51,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		this.filter = [];
 
-		this.childProcess.stdout.on("data", (chunk) => {
+		this.childProcess.stdout!.on("data", (chunk) => {
 			this.log(chunk);
 		});
 
@@ -58,39 +59,37 @@ export class ZanarkandFFXIV extends EventEmitter {
 			this.log(err.message);
 		});
 
-		this.server = createServer((req) => {
-			const data: Array<Buffer | string> = [];
-			this.log("New request!");
-			req.on("data", (chunk: Buffer | string) => {
-				data.push(chunk);
-			});
-			req.on("end", () => {
-				let content;
-				try {
-					content = JSON.parse(data as any);
-				} catch (err) {
-					this.log(
-						`Message parsing threw an error: ${err}\n${
-							err.stack
-						}\nMessage content:\n${data.toString()}`,
-					);
-				}
-				if (
-					this.filter.length === 0 ||
-					this.filter.includes(content.type) ||
-					this.filter.includes(content.subType) ||
-					this.filter.includes(content.superType)
-				) {
-					this.emit("any", content);
-					this.emit(content.packetName, content);
-					if (content.superType) this.emit(content.superType, content);
-					if (content.subType) this.emit(content.subType, content);
-					this.emit("raw", content); // deprecated
-				}
-			});
-		});
+		this.ws = new WebSocket(
+			`ws://${this.options.networkDevice}:${this.options.port}`,
+			{
+				perMessageDeflate: false,
+			},
+		);
 
-		this.server.listen(this.options.port);
+		this.ws.on("message", (data) => {
+			let content;
+			try {
+				content = JSON.parse(data.toString());
+			} catch (err) {
+				this.log(
+					`Message parsing threw an error: ${err}\n${
+						err.stack
+					}\nMessage content:\n${data.toString()}`,
+				);
+			}
+			if (
+				this.filter.length === 0 ||
+				this.filter.includes(content.type) ||
+				this.filter.includes(content.subType) ||
+				this.filter.includes(content.superType)
+			) {
+				this.emit("any", content);
+				this.emit(content.packetName, content);
+				if (content.superType) this.emit(content.superType, content);
+				if (content.subType) this.emit(content.subType, content);
+				this.emit("raw", content); // deprecated
+			}
+		});
 	}
 
 	async parse(_struct: any) {
@@ -108,7 +107,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 			this.kill();
 			this.childProcess = spawn(this.options.exePath!, this.args);
 
-			this.childProcess.stdout.on("data", (chunk) => {
+			this.childProcess.stdout!.on("data", (chunk) => {
 				this.log(chunk);
 			});
 
@@ -126,10 +125,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.server.listen(this.options.port, () => {
-				this.log(`Server started on port ${this.options.port}.`);
-			});
-			this.childProcess.stdin.write("start\n", callback);
+			this.childProcess.stdin!.write("start\n", callback);
 			this.log(`ZanarkandWrapper started!`);
 			resolve();
 		});
@@ -139,10 +135,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.childProcess.stdin.write("stop\n", callback);
-			this.server.close(() => {
-				this.log(`Server on port ${this.options.port} closed.`);
-			});
+			this.childProcess.stdin!.write("stop\n", callback);
+			this.ws.close(0);
 			this.log(`ZanarkandWrapper stopped!`);
 			resolve();
 		});
@@ -152,8 +146,9 @@ export class ZanarkandFFXIV extends EventEmitter {
 		return new Promise((resolve, reject) => {
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.childProcess.stdin.end("kill\n", callback);
+			this.childProcess.stdin!.end("kill\n", callback);
 			delete this.childProcess;
+			this.ws.close(0);
 			this.log(`ZanarkandWrapper killed!`);
 		});
 	}

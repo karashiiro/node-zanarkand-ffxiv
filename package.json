@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "description": "An event-based Node.js wrapper for Zanarkand.",
   "main": "lib/node-zanarkand-ffxiv.js",
-  "files": ["lib/**/*"],
-  "dependencies": {},
+  "files": [
+    "lib/**/*",
+    "ZanarkandWrapper/**/*"
+  ],
+  "dependencies": {
+    "ws": "^7.2.3"
+  },
   "devDependencies": {
+    "@types/ws": "^7.2.4",
     "prettier": "^2.0.4",
     "tslint": "^6.1.1",
     "tslint-config-prettier": "^1.18.0",
@@ -15,8 +21,8 @@
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
-    "prepare" : "npm run build",
-    "prepublishOnly" : "npm run format && npm run lint",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run format && npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
