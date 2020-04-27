@@ -62,11 +62,12 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.ws = new WebSocket(
 			`ws://${this.options.networkDevice}:${this.options.port}`,
 			{
+				handshakeTimeout: 5000,
 				perMessageDeflate: false,
 			},
 		);
 
-		this.ws.on("message", (data) => {
+		this.ws!.on("message", (data) => {
 			let content;
 			try {
 				content = JSON.parse(data.toString());
