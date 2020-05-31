@@ -16,4 +16,7 @@ export interface ZanarkandFFXIVOptions {
 
 	/** Sets the executable path. Default: ZanarkandWrapper/ZanarkandWrapperJSON.exe */
 	exePath?: string;
+
+	/** Enables no-executable execution, requiring that you supply your own active (port-bound) instance of the standalone program. Default: false */
+	noExe?: boolean;
 }
