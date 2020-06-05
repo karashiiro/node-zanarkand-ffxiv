@@ -15,8 +15,6 @@ export class ZanarkandFFXIV extends EventEmitter {
 	private args: string[] | undefined;
 	private ws: WebSocket;
 
-	private statusLoopInstance: Promise<void>;
-
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
 
@@ -110,8 +108,6 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.ws!.on("close", () => {
 			this.log("Connection with ZanarkandWrapper closed.");
 		});
-
-		this.statusLoopInstance = this.statusLoop();
 	}
 
 	async parse(_struct: any) {
@@ -178,16 +174,5 @@ export class ZanarkandFFXIV extends EventEmitter {
 			this.ws.close(0);
 			this.log(`ZanarkandWrapper killed!`);
 		});
-	}
-
-	private async statusLoop() {
-		while (true) {
-			await this.sleep(5000);
-			this.log(`ZanarkandWrapper WebSocket state: ${this.ws!.readyState}`);
-		}
-	}
-
-	private async sleep(timeout: number) {
-		await new Promise((resolve) => setTimeout(resolve, timeout));
 	}
 }
