@@ -73,6 +73,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.childProcess.on("error", (err) => {
 			this.log(err.message);
 		});
+
+		this.childProcess.on("close", (code) => {
+			this.log(`ZanarkandWrapper closed with code: ${code}`);
+		});
 	}
 
 	private connect() {
@@ -147,15 +151,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 				reject(new Error("No instance to reset."));
 			this.kill();
 			if (!this.options.noExe) {
-				this.childProcess = spawn(this.options.exePath!, this.args);
-
-				this.childProcess.stdout!.on("data", (chunk) => {
-					this.log(chunk);
-				});
-
-				this.childProcess.on("error", (err) => {
-					this.log(err.message);
-				});
+				this.launchChild();
 			}
 
 			this.start(callback);
@@ -165,11 +161,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 	}
 
 	start(callback?: (error: Error | null | undefined) => void) {
-		return new Promise(async (resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			if (this.options.noExe) return; // nop
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			await this.sleep(1000);
 			this.childProcess!.stdin!.write("start\n", callback);
 			this.log(`ZanarkandWrapper started!`);
 			resolve();
