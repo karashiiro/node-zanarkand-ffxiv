@@ -7,7 +7,7 @@ import { EventEmitter } from "events";
 import WebSocket from "ws";
 
 export class ZanarkandFFXIV extends EventEmitter {
-	public filter: string[];
+	public packetTypeFilter: string[];
 	public log: (line: string) => void;
 
 	private options: ZanarkandFFXIVOptions;
@@ -27,17 +27,17 @@ export class ZanarkandFFXIV extends EventEmitter {
 			region: options.region || "Global",
 			// tslint:disable-next-line:no-empty
 			logger: options.logger || (() => {}),
-			exePath:
-				options.exePath ||
+			executablePath:
+				options.executablePath ||
 				join(__dirname, "..", "ZanarkandWrapper", "ZanarkandWrapperJSON.exe"),
 			noExe: options.noExe || false,
 		};
 		this.log = this.options.logger!;
 
 		if (!this.options.noExe) {
-			if (!existsSync(this.options.exePath!)) {
+			if (!existsSync(this.options.executablePath!)) {
 				throw new Error(
-					`ZanarkandWrapper not found in ${this.options.exePath}`,
+					`ZanarkandWrapper not found in ${this.options.executablePath}`,
 				);
 			}
 
@@ -53,18 +53,19 @@ export class ZanarkandFFXIV extends EventEmitter {
 			];
 
 			this.log(
-				`Starting ZanarkandWrapper from executable ${this.options.exePath!}.`,
+				`Starting ZanarkandWrapper from executable ${this.options
+					.executablePath!}.`,
 			);
 			this.launchChild();
 		}
 
-		this.filter = [];
+		this.packetTypeFilter = [];
 
 		this.connect();
 	}
 
 	private launchChild() {
-		this.childProcess = spawn(this.options.exePath!, this.args);
+		this.childProcess = spawn(this.options.executablePath!, this.args);
 
 		this.childProcess.stdout!.on("data", (chunk) => {
 			this.log(chunk);
@@ -99,10 +100,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 				);
 			}
 			if (
-				this.filter.length === 0 ||
-				this.filter.includes(content.type) ||
-				this.filter.includes(content.subType) ||
-				this.filter.includes(content.superType)
+				this.packetTypeFilter.length === 0 ||
+				this.packetTypeFilter.includes(content.type) ||
+				this.packetTypeFilter.includes(content.subType) ||
+				this.packetTypeFilter.includes(content.superType)
 			) {
 				this.emit("any", content);
 				this.emit(content.packetName, content);
@@ -145,9 +146,13 @@ export class ZanarkandFFXIV extends EventEmitter {
 		return new Promise((resolve) => this.once(packetName, resolve));
 	}
 
+	filter(packetTypes: string[]) {
+		this.packetTypeFilter = packetTypes;
+	}
+
 	reset(callback?: (error: Error | null | undefined) => void) {
 		return new Promise((resolve, reject) => {
-			if (this.options.exePath == null || this.args == null)
+			if (this.options.executablePath == null || this.args == null)
 				reject(new Error("No instance to reset."));
 			this.kill();
 			if (!this.options.noExe) {
@@ -193,9 +198,5 @@ export class ZanarkandFFXIV extends EventEmitter {
 			this.ws!.close(0);
 			this.log(`ZanarkandWrapper killed!`);
 		});
-	}
-
-	private async sleep(ms: number): Promise<void> {
-		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 }
