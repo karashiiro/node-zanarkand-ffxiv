@@ -123,6 +123,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 					this.packetTypeFilter.includes(content.subType) ||
 					this.packetTypeFilter.includes(content.superType)
 				) {
+					// Before this statement, content.data is actually a number[], but we don't want to reveal that to the user
+					// since that's not the type that they'll be operating on.
+					// Alternatively, it could be sent from ZanarkandWrapper as something called _data which would then be deleted,
+					// but I don't want alternative consumers to deal with a cheat that has nothing to do with them.
 					if (content.data) content.data = new Uint8Array(content.data);
 
 					this.postprocessorRegistry[content.type](content);
