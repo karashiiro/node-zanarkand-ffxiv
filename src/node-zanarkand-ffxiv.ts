@@ -9,11 +9,13 @@ import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 import defaults from "lodash.defaults";
 import WebSocket from "ws";
 
+import { postprocessors } from "./postprocessors";
+
 export class ZanarkandFFXIV extends EventEmitter {
 	public packetTypeFilter: string[];
 	public log: (line: string) => void;
 	private postprocessorRegistry: {
-		[packetType: string]: (struct: any) => void;
+		[packetType: string]: (struct: BasePacket) => void;
 	};
 
 	private options: ZanarkandFFXIVOptions;
@@ -24,7 +26,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
 
-		this.registerPostprocessors();
+		this.postprocessorRegistry = postprocessors();
 
 		if (!options) options = {};
 		this.options = defaults(options, {
@@ -155,12 +157,6 @@ export class ZanarkandFFXIV extends EventEmitter {
 				);
 				setTimeout(this.connect, 1000);
 			});
-	}
-
-	registerPostprocessors() {
-		this.postprocessorRegistry = {
-			//
-		};
 	}
 
 	async parse(_struct: any) {
