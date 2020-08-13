@@ -1,8 +1,9 @@
-import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 import { join } from "path";
 import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
 import { EventEmitter } from "events";
+
+import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 
 import defaults from "lodash.defaults";
 import WebSocket from "ws";
@@ -137,9 +138,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		this.ws!.on("error", (err) => {
 			this.log(
-				'Connection errored with message "' +
-					err.message +
-					'", reconnecting in 1 second...',
+				`Connection errored with message ${err.message}, reconnecting in 1 second...`,
 			);
 			setTimeout(() => this.connect(), 1000);
 		});
@@ -158,7 +157,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 	}
 
 	reset(callback?: (error: Error | null | undefined) => void) {
-		return new Promise((resolve, reject) => {
+		return new Promise((_, reject) => {
 			if (this.options.executablePath == null || this.args == null)
 				reject(new Error("No instance to reset."));
 			this.kill();
@@ -168,30 +167,27 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 			this.start(callback);
 			this.log("ZanarkandWrapper reset!");
-			resolve();
 		});
 	}
 
 	start(callback?: (error: Error | null | undefined) => void) {
-		return new Promise((resolve, reject) => {
+		return new Promise((_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
 			this.childProcess!.stdin!.write("start\n", callback);
 			this.log(`ZanarkandWrapper started!`);
-			resolve();
 		});
 	}
 
 	stop(callback?: (error: Error | null | undefined) => void) {
-		return new Promise((resolve, reject) => {
+		return new Promise((_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (this.childProcess == null)
 				reject(new Error("ZanarkandWrapper is uninitialized."));
 			this.childProcess!.stdin!.write("stop\n", callback);
 			this.ws!.close(0);
 			this.log(`ZanarkandWrapper stopped!`);
-			resolve();
 		});
 	}
 
