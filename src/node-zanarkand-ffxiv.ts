@@ -24,7 +24,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
 
-		this.registerPreprocessors();
+		this.registerPostprocessors();
 
 		if (!options) options = {};
 		this.options = defaults(options, {
@@ -129,7 +129,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 					// but I don't want alternative consumers to deal with a cheat that has nothing to do with them.
 					if (content.data) content.data = new Uint8Array(content.data);
 
-					this.postprocessorRegistry[content.type](content);
+					const postprocessor = this.postprocessorRegistry[content.type];
+					if (postprocessor) postprocessor(content);
 
 					this.emit("any", content);
 					this.emit(content.type, content);
@@ -156,7 +157,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 			});
 	}
 
-	registerPreprocessors() {
+	registerPostprocessors() {
 		this.postprocessorRegistry = {
 			//
 		};
