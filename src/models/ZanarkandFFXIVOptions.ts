@@ -19,4 +19,7 @@ export interface ZanarkandFFXIVOptions {
 
 	/** Enables no-executable execution, requiring that you supply your own active (port-bound) instance of the standalone program. Default: false */
 	noExe?: boolean;
+
+	/** Sets the data path, used for any remote resources downloaded. Default: package directory */
+	dataPath?: string;
 }

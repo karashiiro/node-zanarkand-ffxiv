@@ -31,6 +31,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 				options.executablePath ||
 				join(__dirname, "..", "ZanarkandWrapper", "ZanarkandWrapperJSON.exe"),
 			noExe: options.noExe || false,
+			dataPath: options.dataPath || "",
 		};
 		this.log = this.options.logger!;
 
@@ -50,6 +51,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 				this.options.networkDevice!,
 				"-Dev",
 				String(this.options.isDev),
+				"-DataPath",
+				String(this.options.dataPath),
 			];
 
 			this.log(
