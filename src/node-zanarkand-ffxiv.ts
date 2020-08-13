@@ -4,6 +4,7 @@ import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
 import { EventEmitter } from "events";
 
+import defaults from "lodash.defaults";
 import WebSocket from "ws";
 
 export class ZanarkandFFXIV extends EventEmitter {
@@ -19,20 +20,23 @@ export class ZanarkandFFXIV extends EventEmitter {
 		super();
 
 		if (!options) options = {};
-
-		this.options = {
-			isDev: options.isDev || false,
-			networkDevice: options.networkDevice || "localhost",
-			port: options.port || 13346,
-			region: options.region || "Global",
+		this.options = defaults(options, {
+			isDev: false,
+			networkDevice: "localhost",
+			port: 13346,
+			region: "Global",
 			// tslint:disable-next-line:no-empty
-			logger: options.logger || (() => {}),
-			executablePath:
-				options.executablePath ||
-				join(__dirname, "..", "ZanarkandWrapper", "ZanarkandWrapperJSON.exe"),
-			noExe: options.noExe || false,
-			dataPath: options.dataPath || "",
-		};
+			logger: () => {},
+			executablePath: join(
+				__dirname,
+				"..",
+				"ZanarkandWrapper",
+				"ZanarkandWrapperJSON.exe",
+			),
+			noExe: false,
+			dataPath: "",
+		});
+
 		this.log = this.options.logger!;
 
 		if (!this.options.noExe) {

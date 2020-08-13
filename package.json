@@ -8,9 +8,11 @@
     "ZanarkandWrapper/**/*"
   ],
   "dependencies": {
+    "lodash.defaults": "^4.2.0",
     "ws": "^7.2.3"
   },
   "devDependencies": {
+    "@types/lodash.defaults": "^4.2.6",
     "@types/ws": "^7.2.4",
     "prettier": "^2.0.4",
     "tslint": "^6.1.1",
