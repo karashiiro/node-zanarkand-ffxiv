@@ -1,15 +1,14 @@
-import { join } from "path";
 import { spawn, ChildProcess } from "child_process";
-import { existsSync } from "fs";
 import { EventEmitter } from "events";
-
-import { BasePacket } from "./models/BasePacket";
-import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
-
+import { existsSync } from "fs";
 import defaults from "lodash.defaults";
 import WebSocket from "ws";
 
+import { defaultOptions } from "./defaultOptions";
 import { postprocessors } from "./postprocessors";
+
+import { BasePacket } from "./models/BasePacket";
+import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 
 export class ZanarkandFFXIV extends EventEmitter {
 	public packetTypeFilter: string[];
@@ -29,22 +28,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.postprocessorRegistry = postprocessors();
 
 		if (!options) options = {};
-		this.options = defaults(options, {
-			isDev: false,
-			networkDevice: "localhost",
-			port: 13346,
-			region: "Global",
-			// tslint:disable-next-line:no-empty
-			logger: () => {},
-			executablePath: join(
-				__dirname,
-				"..",
-				"ZanarkandWrapper",
-				"ZanarkandWrapperJSON.exe",
-			),
-			noExe: false,
-			dataPath: "",
-		});
+		this.options = defaults(options, defaultOptions);
 
 		this.log = this.options.logger!;
 
@@ -87,15 +71,11 @@ export class ZanarkandFFXIV extends EventEmitter {
 			throw new Error("Child process failed to start!");
 
 		this.childProcess.stdout
-			.on("data", (chunk) => {
-				this.log(chunk);
-			})
-			.on("error", (err) => {
-				this.log(err.message);
-			})
-			.on("close", (code: number) => {
-				this.log(`ZanarkandWrapper closed with code: ${code}`);
-			});
+			.on("data", (chunk) => this.log(chunk))
+			.on("error", (err) => this.log(err.message))
+			.on("close", (code: number) =>
+				this.log(`ZanarkandWrapper closed with code: ${code}`),
+			);
 	}
 
 	private connect() {
