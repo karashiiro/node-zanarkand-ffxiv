@@ -1,6 +1,6 @@
 export interface ZanarkandFFXIVOptions {
 	/** Sets the IPC version to Global/CN/KR. Default: Global */
-	region?: string;
+	region?: "Global" | "KR" | "CN";
 
 	/** Sets the port for the IPC connection between this application and Node.js. Default: 13346 */
 	port?: number;

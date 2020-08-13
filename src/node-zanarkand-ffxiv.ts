@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from "child_process";
 import { existsSync } from "fs";
 import { EventEmitter } from "events";
 
+import { BasePacket } from "./models/BasePacket";
 import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 
 import defaults from "lodash.defaults";
@@ -11,14 +12,19 @@ import WebSocket from "ws";
 export class ZanarkandFFXIV extends EventEmitter {
 	public packetTypeFilter: string[];
 	public log: (line: string) => void;
+	private postprocessorRegistry: {
+		[packetType: string]: (struct: any) => void;
+	};
 
 	private options: ZanarkandFFXIVOptions;
-	private childProcess: ChildProcess | undefined;
-	private args: string[] | undefined;
-	private ws: WebSocket | undefined;
+	private childProcess: ChildProcess;
+	private args: string[];
+	private ws: WebSocket;
 
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
+
+		this.registerPreprocessors();
 
 		if (!options) options = {};
 		this.options = defaults(options, {
@@ -75,17 +81,19 @@ export class ZanarkandFFXIV extends EventEmitter {
 	private launchChild() {
 		this.childProcess = spawn(this.options.executablePath!, this.args);
 
-		this.childProcess.stdout!.on("data", (chunk) => {
-			this.log(chunk);
-		});
+		if (!this.childProcess.stdout)
+			throw new Error("Child process failed to start!");
 
-		this.childProcess.on("error", (err) => {
-			this.log(err.message);
-		});
-
-		this.childProcess.on("close", (code) => {
-			this.log(`ZanarkandWrapper closed with code: ${code}`);
-		});
+		this.childProcess.stdout
+			.on("data", (chunk) => {
+				this.log(chunk);
+			})
+			.on("error", (err) => {
+				this.log(err.message);
+			})
+			.on("close", (code: number) => {
+				this.log(`ZanarkandWrapper closed with code: ${code}`);
+			});
 	}
 
 	private connect() {
@@ -96,52 +104,58 @@ export class ZanarkandFFXIV extends EventEmitter {
 			},
 		);
 
-		this.ws!.on("message", (data) => {
-			let content;
-			try {
-				content = JSON.parse(data.toString());
-			} catch (err) {
+		this.ws
+			.on("message", (data) => {
+				let content: BasePacket;
+				try {
+					content = JSON.parse(data.toString());
+				} catch (err) {
+					this.log(
+						`Message parsing threw an error: ${err}\n${
+							err.stack
+						}\nMessage content:\n${data.toString()}`,
+					);
+					return;
+				}
+				if (
+					this.packetTypeFilter.length === 0 ||
+					this.packetTypeFilter.includes(content.type) ||
+					this.packetTypeFilter.includes(content.subType) ||
+					this.packetTypeFilter.includes(content.superType)
+				) {
+					if (content.data) content.data = new Uint8Array(content.data);
+
+					this.postprocessorRegistry[content.type](content);
+
+					this.emit("any", content);
+					this.emit(content.type, content);
+					if (content.superType) this.emit(content.superType, content);
+					if (content.subType) this.emit(content.subType, content);
+					this.emit("raw", content); // deprecated
+				}
+			})
+			.on("open", () =>
 				this.log(
-					`Message parsing threw an error: ${err}\n${
-						err.stack
-					}\nMessage content:\n${data.toString()}`,
+					`Connected to ZanarkandWrapper on ${this.options.networkDevice}:${this
+						.options.port!}!`,
+				),
+			)
+			.on("upgrade", () =>
+				this.log("ZanarkandWrapper connection protocol upgraded."),
+			)
+			.on("close", () => this.log("Connection with ZanarkandWrapper closed."))
+			.on("error", (err) => {
+				this.log(
+					`Connection errored with message ${err.message}, reconnecting in 1 second...`,
 				);
-			}
-			if (
-				this.packetTypeFilter.length === 0 ||
-				this.packetTypeFilter.includes(content.type) ||
-				this.packetTypeFilter.includes(content.subType) ||
-				this.packetTypeFilter.includes(content.superType)
-			) {
-				this.emit("any", content);
-				this.emit(content.packetName, content);
-				if (content.superType) this.emit(content.superType, content);
-				if (content.subType) this.emit(content.subType, content);
-				this.emit("raw", content); // deprecated
-			}
-		});
+				setTimeout(this.connect, 1000);
+			});
+	}
 
-		this.ws!.on("open", () => {
-			this.log(
-				`Connected to ZanarkandWrapper on ${this.options.networkDevice}:${this
-					.options.port!}!`,
-			);
-		});
-
-		this.ws!.on("upgrade", () => {
-			this.log("ZanarkandWrapper connection protocol upgraded.");
-		});
-
-		this.ws!.on("close", () => {
-			this.log("Connection with ZanarkandWrapper closed.");
-		});
-
-		this.ws!.on("error", (err) => {
-			this.log(
-				`Connection errored with message ${err.message}, reconnecting in 1 second...`,
-			);
-			setTimeout(() => this.connect(), 1000);
-		});
+	registerPreprocessors() {
+		this.postprocessorRegistry = {
+			//
+		};
 	}
 
 	async parse(_struct: any) {
@@ -173,9 +187,11 @@ export class ZanarkandFFXIV extends EventEmitter {
 	start(callback?: (error: Error | null | undefined) => void) {
 		return new Promise((_, reject) => {
 			if (this.options.noExe) return; // nop
-			if (this.childProcess == null)
+			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.childProcess!.stdin!.write("start\n", callback);
+				return;
+			}
+			this.childProcess.stdin!.write("start\n", callback);
 			this.log(`ZanarkandWrapper started!`);
 		});
 	}
@@ -183,10 +199,12 @@ export class ZanarkandFFXIV extends EventEmitter {
 	stop(callback?: (error: Error | null | undefined) => void) {
 		return new Promise((_, reject) => {
 			if (this.options.noExe) return; // nop
-			if (this.childProcess == null)
+			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.childProcess!.stdin!.write("stop\n", callback);
-			this.ws!.close(0);
+				return;
+			}
+			this.childProcess.stdin!.write("stop\n", callback);
+			this.ws.close(0);
 			this.log(`ZanarkandWrapper stopped!`);
 		});
 	}
@@ -194,11 +212,13 @@ export class ZanarkandFFXIV extends EventEmitter {
 	kill(callback?: () => {}) {
 		return new Promise((resolve, reject) => {
 			if (this.options.noExe) return; // nop
-			if (this.childProcess == null)
+			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
-			this.childProcess!.stdin!.end("kill\n", callback);
+				return;
+			}
+			this.childProcess.stdin!.end("kill\n", callback);
 			delete this.childProcess;
-			this.ws!.close(0);
+			this.ws.close(0);
 			this.log(`ZanarkandWrapper killed!`);
 		});
 	}
