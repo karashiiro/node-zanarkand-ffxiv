@@ -166,41 +166,50 @@ export class ZanarkandFFXIV extends EventEmitter {
 	}
 
 	start(callback?: (error: Error | null | undefined) => void) {
-		return new Promise((_, reject) => {
+		return new Promise(async (_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
 				return;
 			}
-			this.childProcess.stdin!.write("start\n", callback);
+			await this.waitForWebSocketReady();
+			this.ws.send("start");
 			this.log(`ZanarkandWrapper started!`);
 		});
 	}
 
 	stop(callback?: (error: Error | null | undefined) => void) {
-		return new Promise((_, reject) => {
+		return new Promise(async (_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
 				return;
 			}
-			this.childProcess.stdin!.write("stop\n", callback);
+			await this.waitForWebSocketReady();
+			this.ws.send("stop");
 			this.ws.close(0);
 			this.log(`ZanarkandWrapper stopped!`);
 		});
 	}
 
 	kill(callback?: () => {}) {
-		return new Promise((resolve, reject) => {
+		return new Promise(async (_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
 				reject(new Error("ZanarkandWrapper is uninitialized."));
 				return;
 			}
-			this.childProcess.stdin!.end("kill\n", callback);
+			await this.waitForWebSocketReady();
+			this.ws.send("kill");
 			delete this.childProcess;
 			this.ws.close(0);
 			this.log(`ZanarkandWrapper killed!`);
 		});
+	}
+
+	async waitForWebSocketReady() {
+		while (this.ws.readyState !== 1)
+			await new Promise((resolve) => setTimeout(resolve, 1));
+		return;
 	}
 }
