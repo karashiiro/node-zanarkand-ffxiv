@@ -151,7 +151,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.packetTypeFilter = packetTypes;
 	}
 
-	reset(callback?: (error: Error | null | undefined) => void) {
+	reset(callback?: (error: Error | undefined) => void) {
 		return new Promise((_, reject) => {
 			if (this.options.executablePath == null || this.args == null)
 				reject(new Error("No instance to reset."));
@@ -165,7 +165,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		});
 	}
 
-	start(callback?: (error: Error | null | undefined) => void) {
+	start(callback?: (error: Error | undefined) => void) {
 		return new Promise(async (_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
@@ -173,12 +173,12 @@ export class ZanarkandFFXIV extends EventEmitter {
 				return;
 			}
 			await this.waitForWebSocketReady();
-			this.ws.send("start");
+			this.ws.send("start", callback);
 			this.log(`ZanarkandWrapper started!`);
 		});
 	}
 
-	stop(callback?: (error: Error | null | undefined) => void) {
+	stop(callback?: (error: Error | undefined) => void) {
 		return new Promise(async (_, reject) => {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
@@ -186,7 +186,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 				return;
 			}
 			await this.waitForWebSocketReady();
-			this.ws.send("stop");
+			this.ws.send("stop", callback);
 			this.ws.close(0);
 			this.log(`ZanarkandWrapper stopped!`);
 		});
@@ -200,7 +200,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 				return;
 			}
 			await this.waitForWebSocketReady();
-			this.ws.send("kill");
+			this.ws.send("kill", callback);
 			delete this.childProcess;
 			this.ws.close(0);
 			this.log(`ZanarkandWrapper killed!`);
