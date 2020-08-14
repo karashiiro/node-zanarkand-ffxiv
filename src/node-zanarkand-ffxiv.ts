@@ -165,46 +165,38 @@ export class ZanarkandFFXIV extends EventEmitter {
 		});
 	}
 
-	start(callback?: (error: Error | undefined) => void) {
-		return new Promise(async (_, reject) => {
-			if (this.options.noExe) return; // nop
-			if (!this.childProcess) {
-				reject(new Error("ZanarkandWrapper is uninitialized."));
-				return;
-			}
-			await this.waitForWebSocketReady();
-			this.ws.send("start", callback);
-			this.log(`ZanarkandWrapper started!`);
-		});
+	async start(callback?: (error: Error | undefined) => void) {
+		await this.sendMessage("start", callback);
+		this.log(`ZanarkandWrapper started!`);
 	}
 
-	stop(callback?: (error: Error | undefined) => void) {
-		return new Promise(async (_, reject) => {
-			if (this.options.noExe) return; // nop
-			if (!this.childProcess) {
-				reject(new Error("ZanarkandWrapper is uninitialized."));
-				return;
-			}
-			await this.waitForWebSocketReady();
-			this.ws.send("stop", callback);
-			this.ws.close(0);
-			this.log(`ZanarkandWrapper stopped!`);
-		});
+	async stop(callback?: (error: Error | undefined) => void) {
+		await this.sendMessage("stop", callback);
+		this.ws.close(0);
+		this.log(`ZanarkandWrapper stopped!`);
 	}
 
-	kill(callback?: () => {}) {
-		return new Promise(async (_, reject) => {
+	async kill(callback?: (error: Error | undefined) => {}) {
+		await this.sendMessage("kill", callback);
+		this.ws.close(0);
+		this.log(`ZanarkandWrapper killed!`);
+	}
+
+	async sendMessage(
+		message: string,
+		callback?: (error: Error | undefined) => void,
+	) {
+		try {
 			if (this.options.noExe) return; // nop
 			if (!this.childProcess) {
-				reject(new Error("ZanarkandWrapper is uninitialized."));
-				return;
+				throw new Error("ZanarkandWrapper is uninitialized.");
 			}
 			await this.waitForWebSocketReady();
-			this.ws.send("kill", callback);
-			delete this.childProcess;
-			this.ws.close(0);
-			this.log(`ZanarkandWrapper killed!`);
-		});
+			this.ws.send(message, callback);
+		} catch (err) {
+			if (callback) callback(err);
+			else throw err;
+		}
 	}
 
 	async waitForWebSocketReady() {
