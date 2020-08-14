@@ -182,7 +182,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.log(`ZanarkandWrapper killed!`);
 	}
 
-	async sendMessage(
+	private async sendMessage(
 		message: string,
 		callback?: (error: Error | undefined) => void,
 	) {
@@ -199,7 +199,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		}
 	}
 
-	async waitForWebSocketReady() {
+	private async waitForWebSocketReady() {
 		while (this.ws.readyState !== 1)
 			await new Promise((resolve) => setTimeout(resolve, 1));
 		return;
