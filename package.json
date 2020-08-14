@@ -1,6 +1,6 @@
 {
   "name": "node-zanarkand-ffxiv",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "An event-based Node.js wrapper for Zanarkand.",
   "main": "lib/node-zanarkand-ffxiv.js",
   "files": [
@@ -9,7 +9,7 @@
   ],
   "dependencies": {
     "lodash.defaults": "^4.2.0",
-    "ws": "^7.2.3"
+    "ws": "^7.3.1"
   },
   "devDependencies": {
     "@types/lodash.defaults": "^4.2.6",

@@ -135,7 +135,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 				this.log(
 					`Connection errored with message ${err.message}, reconnecting in 1 second...`,
 				);
-				setTimeout(this.connect, 1000);
+				setTimeout(() => this.connect(), 1000); // This cannot be reduced since we need to maintain "this" context.
 			});
 	}
 
