@@ -13,14 +13,14 @@ import { ZanarkandFFXIVOptions } from "./models/ZanarkandFFXIVOptions";
 export class ZanarkandFFXIV extends EventEmitter {
 	public packetTypeFilter: string[];
 	public log: (line: string) => void;
-	private postprocessorRegistry: {
-		[packetType: string]: (struct: BasePacket) => void;
-	};
 
 	private options: ZanarkandFFXIVOptions;
 	private childProcess: ChildProcess;
 	private args: string[];
 	private ws: WebSocket;
+	private postprocessorRegistry: {
+		[packetType: string]: (struct: BasePacket) => BasePacket;
+	};
 
 	constructor(options?: ZanarkandFFXIVOptions) {
 		super();
