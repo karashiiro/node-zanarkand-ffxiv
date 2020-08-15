@@ -139,10 +139,6 @@ export class ZanarkandFFXIV extends EventEmitter {
 			});
 	}
 
-	async parse(_struct: any) {
-		throw new Error("Raw message parsing has not yet been reimplemented.");
-	}
-
 	oncePacket(packetName: string): Promise<any> {
 		return new Promise((resolve) => this.once(packetName, resolve));
 	}
@@ -176,7 +172,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 		this.log(`ZanarkandWrapper stopped!`);
 	}
 
-	async kill(callback?: (error: Error | undefined) => {}) {
+	async kill(callback?: (error: Error | undefined) => void) {
 		await this.sendMessage("kill", callback);
 		this.ws.close(0);
 		this.log(`ZanarkandWrapper killed!`);
