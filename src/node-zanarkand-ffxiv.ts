@@ -109,7 +109,10 @@ export class ZanarkandFFXIV extends EventEmitter {
 					// since that's not the type that they'll be operating on.
 					// Alternatively, it could be sent from ZanarkandWrapper as something called _data which would then be deleted,
 					// but I don't want alternative consumers to deal with a cheat that has nothing to do with them.
-					if (content.data) content.data = new Uint8Array(content.data);
+					if (content.data) {
+						content.data = new Uint8Array(content.data);
+						content.packetSize = content.data?.length + 32;
+					}
 
 					const postprocessor = this.postprocessorRegistry[content.type];
 					if (postprocessor) postprocessor(content);

@@ -1,4 +1,5 @@
 export interface BasePacket {
+	packetSize?: number;
 	opcode: number;
 	type: string;
 	subType: string;
