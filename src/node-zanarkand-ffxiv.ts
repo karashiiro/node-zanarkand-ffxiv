@@ -29,6 +29,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		if (!options) options = {};
 		this.options = defaults(options, defaultOptions);
+		this.options.region ??= "Global";
+		this.options.networkDevice ??= "localhost";
 
 		this.log = this.options.logger!;
 
@@ -41,15 +43,15 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 			this.args = [
 				"-Region",
-				this.options.region!,
+				this.options.region,
 				"-Port",
 				String(this.options.port),
 				"-LocalIP",
-				this.options.networkDevice!,
+				this.options.networkDevice,
 				"-Dev",
 				String(this.options.isDev),
 				"-DataPath",
-				String(this.options.dataPath),
+				String(this.options.dataPath).replace(/\\/g, "/"),
 			];
 
 			this.log(
@@ -66,6 +68,7 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 	private launchChild() {
 		this.childProcess = spawn(this.options.executablePath!, this.args);
+		console.log(this.args)
 
 		if (!this.childProcess.stdout)
 			throw new Error("Child process failed to start!");
