@@ -30,6 +30,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "cat package.json"
         run: cat ./package.json
+      - name: "Install dependencies"
+        run: npm install
       - name: "Publish to NPM"
         run: npm publish
         env:
