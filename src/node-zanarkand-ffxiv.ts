@@ -29,8 +29,8 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 		if (!options) options = {};
 		this.options = defaults(options, defaultOptions);
-		this.options.region ??= "Global";
-		this.options.networkDevice ??= "localhost";
+		this.options.region = this.options.region ?? "Global";
+		this.options.networkDevice = this.options.networkDevice ?? "localhost";
 
 		this.log = this.options.logger!;
 
