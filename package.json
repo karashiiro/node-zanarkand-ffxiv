@@ -1,6 +1,6 @@
 {
   "name": "node-zanarkand-ffxiv",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "An event-based Node.js wrapper for Zanarkand.",
   "main": "lib/node-zanarkand-ffxiv.js",
   "files": [
