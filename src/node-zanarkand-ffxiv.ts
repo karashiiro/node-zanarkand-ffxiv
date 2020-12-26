@@ -68,7 +68,6 @@ export class ZanarkandFFXIV extends EventEmitter {
 
 	private launchChild() {
 		this.childProcess = spawn(this.options.executablePath!, this.args);
-		console.log(this.args)
 
 		if (!this.childProcess.stdout)
 			throw new Error("Child process failed to start!");
